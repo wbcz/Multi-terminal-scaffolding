@@ -65,7 +65,25 @@
       date.ts         # 日期工具
 
 # 说明：
-# 1. 所有的 package.json 都继承根目录的依赖配置
-# 2. 所有的 tsconfig.json 都继承根目录的 TypeScript 配置
-# 3. 包之间可以相互依赖，使用 workspace:* 版本标识
-# 4. 共享包都从 src/index.ts 导出其功能 
+# 1. 根目录的 package.json 定义公共开发依赖（devDependencies）
+# 2. 子包的 package.json 可以通过 workspace:* 引用其他子包
+# 3. 所有的 tsconfig.json 都继承根目录的 TypeScript 配置
+# 4. pnpm workspace 确保依赖提升和包之间的链接
+# 5. 共享包都从 src/index.ts 导出其功能
+
+# 依赖管理说明：
+# 1. 根目录 package.json：
+#    - 定义工作空间配置
+#    - 存放公共的开发工具依赖（如 TypeScript、ESLint）
+#    - 定义跨包的公共脚本命令
+#
+# 2. 子包 package.json：
+#    - 定义自己的特定依赖
+#    - 使用 "workspace:*" 引用工作空间中的其他包
+#    - 可以覆盖或添加自己的脚本命令
+#
+# 3. pnpm 工作空间特性：
+#    - 依赖提升和复用
+#    - 包之间的软链接
+#    - 确保依赖版本一致性
+#    - 支持并行执行脚本 
