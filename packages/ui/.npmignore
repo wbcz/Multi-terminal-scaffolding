@@ -1,0 +1,21 @@
+# 源码和配置文件
+src/
+tsconfig.json
+.eslintrc.js
+
+# 开发工具配置
+.vscode/
+.idea/
+.DS_Store
+
+# 测试文件
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# 其他
+node_modules/
+*.log
+.npmrc 
