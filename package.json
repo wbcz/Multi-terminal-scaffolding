@@ -3,8 +3,10 @@
   "version": "0.0.2",
   "private": true,
   "scripts": {
-    "dev": "pnpm -r dev",
-    "build": "pnpm -r build",
+    "dev": "pnpm --filter @eleme/web dev",
+    "dev:all": "pnpm -r dev",
+    "build": "pnpm --filter @eleme/web build",
+    "build:all": "pnpm -r build",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r type-check",
     "release": "standard-version",
