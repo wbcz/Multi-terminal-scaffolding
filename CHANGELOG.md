@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://github.com/your-username/your-repo/compare/v0.0.2...v0.0.3) (2025-01-13)
+
+
+### ✨ Features | 新功能
+
+* init ([6a89774](https://github.com/your-username/your-repo/commit/6a897741ea872717d20d73af87e1182feae1d011))
+
 ### 0.0.2 (2025-01-13)
 
 
