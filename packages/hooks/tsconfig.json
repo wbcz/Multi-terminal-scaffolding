@@ -2,9 +2,13 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationDir": "./dist",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["node", "vite/client"]
   },
-  "include": ["src"]
+  "include": ["src", "vite.config.ts"]
 } 

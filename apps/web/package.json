@@ -10,11 +10,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@wbcz/ui": "workspace:*",
+    "@wbcz/hooks": "workspace:*",
     "@eleme/api": "workspace:*",
-    "@eleme/hooks": "workspace:*",
     "@eleme/shared": "workspace:*",
     "@eleme/types": "workspace:*",
-    "@eleme/ui": "workspace:*",
     "@eleme/utils": "workspace:*",
     "antd": "^5.0.0",
     "mobx": "^6.0.0",

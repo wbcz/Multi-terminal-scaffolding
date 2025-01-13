@@ -1,5 +1,10 @@
 import { useState, useCallback } from 'react';
-import type { ApiResponse } from '@eleme/types';
+
+interface ApiResponse<T> {
+  code: number;
+  data: T;
+  message: string;
+}
 
 interface RequestOptions<TData, TParams> {
   onSuccess?: (data: TData) => void;
@@ -19,7 +24,7 @@ export function useRequest<TData = any, TParams = void>(
     async (params: TParams = options.defaultParams as TParams) => {
       setLoading(true);
       setError(null);
-
+        console.log('params3', params);
       try {
         const response = await requestFn(params);
         setData(response.data);
