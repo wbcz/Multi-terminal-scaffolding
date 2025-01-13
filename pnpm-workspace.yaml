@@ -1,0 +1,5 @@
+packages:
+  # 所有的应用
+  - 'apps/*'
+  # 所有的共享包
+  - 'packages/*' 
