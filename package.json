@@ -1,12 +1,10 @@
 {
-  "name": "eleme",
+  "name": "eleme-monorepo",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev:web": "pnpm --filter @eleme/web dev",
-    "dev:admin": "pnpm --filter @eleme/admin dev",
     "build:web": "pnpm --filter @eleme/web build",
-    "build:admin": "pnpm --filter @eleme/admin build",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r type-check"
   },

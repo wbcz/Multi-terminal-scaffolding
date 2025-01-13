@@ -1,28 +1,24 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@eleme/*": ["../../packages/*/src"]
-    }
+      "@/*": ["src/*"]
+    },
+    "types": ["node", "vite/client"]
   },
   "include": ["src"],
+  // references 配置用于指定项目引用的其他 TypeScript 项目
+  // 这里列出了当前 web 应用依赖的所有内部包
+  // 通过 Project References 可以:
+  // 1. 实现更快的类型检查和增量编译
+  // 2. 确保依赖项的正确构建顺序
+  // 3. 支持跨项目的类型检查和智能提示
   "references": [
-    { "path": "./tsconfig.node.json" }
+    { "path": "../../packages/api" },     // API 接口相关的类型定义和实现
+    { "path": "../../packages/hooks" },    // 可复用的 React Hooks
+    { "path": "../../packages/types" },    // 共享的 TypeScript 类型定义
+    { "path": "../../packages/ui" },       // UI 组件库
+    { "path": "../../packages/utils" }     // 通用工具函数
   ]
 }
