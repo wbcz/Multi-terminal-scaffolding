@@ -4,15 +4,19 @@ import type { ButtonProps as AntButtonProps } from 'antd';
 import styled from 'styled-components';
 
 export interface ButtonProps extends AntButtonProps {
-  variant?: 'primary' | 'secondary' | 'text';
+  variant?: 'text' | 'outlined' | 'dashed' | 'solid' | 'filled';
 }
 
-const StyledButton = styled(AntButton)<ButtonProps>`
-  &.ant-btn-primary {
-    background: ${props => props.variant === 'secondary' ? '#666' : '#1890ff'};
+const StyledButton = styled(AntButton)`
+  &.custom-button {
+    border-radius: 4px;
   }
 `;
 
-export const Button: React.FC<ButtonProps> = ({ variant = 'primary', ...props }) => {
-  return <StyledButton {...props} type={variant === 'text' ? 'link' : 'primary'} variant={variant} />;
+export const Button: React.FC<ButtonProps> = ({ children, ...props }) => {
+  return (
+    <StyledButton className="custom-button" {...props}>
+      {children}
+    </StyledButton>
+  );
 }; 
