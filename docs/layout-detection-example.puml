@@ -1,0 +1,58 @@
+@startuml
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+skinparam rectangleFontColor black
+skinparam rectangleBorderColor #666666
+
+title 数据概览卡片组布局检测示例
+
+' 定义卡片尺寸和位置
+rectangle "容器 (card-group)\n宽度: 1200px\n高度: 200px" as Container {
+  rectangle "总订单\n<size:10>x1=20, y1=20\nw=360, h=160</size>" as Card1 #lightblue
+  rectangle "今日订单\n<size:10>x2=396, y2=20\nw=360, h=160</size>" as Card2 #lightblue
+  rectangle "待处理订单\n<size:10>x3=772, y3=20\nw=360, h=160</size>" as Card3 #lightblue
+}
+
+note bottom of Container
+**布局检测过程**
+----
+1. 方向检测:
+* |y2-y1| = |20-20| = 0 < 5px ✓ 水平对齐
+* |x2-x1| = |396-20| = 376px > 5px ✗ 非垂直对齐
+结论: isHorizontal = true, isVertical = false
+
+2. 间距检测:
+* 水平间距1 = x2-x1-w1 = 396-20-360 = 16px
+* 水平间距2 = x3-x2-w2 = 772-396-360 = 16px
+结论: 统一的水平间距 = 16px
+
+3. 换行检测:
+* 所有 x 值递增: 20 < 396 < 772
+结论: 无换行 (wrap = false)
+
+4. 最终判定:
+* direction = horizontal
+* spacing = 16px
+* wrap = false
+* justify = start (默认左对齐)
+* align = stretch (卡片等高)
+end note
+
+' 布局示意
+Card1 -[hidden]right-> Card2
+Card2 -[hidden]right-> Card3
+
+' 标注间距
+note right of Card1 : 16px
+note right of Card2 : 16px
+
+legend right
+  |= 检测项 |= 结果 |= 依据 |
+  | 布局方向 | 水平 | y坐标对齐 + x坐标递增 |
+  | 间距 | 16px | 相邻元素间隔一致 |
+  | 换行 | 否 | x坐标持续递增 |
+  | 对齐方式 | stretch | 元素等高 |
+endlegend
+
+@enduml 

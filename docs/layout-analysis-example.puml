@@ -1,0 +1,46 @@
+@startuml
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+skinparam rectangleFontColor black
+skinparam rectangleBorderColor #666666
+
+title 布局分析示例
+
+rectangle "容器元素" as Container {
+  rectangle "子元素1\n(x1, y1)" as Child1 #lightblue
+  rectangle "子元素2\n(x2, y2)" as Child2 #lightblue
+  rectangle "子元素3\n(x3, y3)" as Child3 #lightblue
+}
+
+note bottom of Container
+**布局判断规则**
+----
+水平布局:
+* |y2-y1| < threshold
+* x2 > x1
+----
+垂直布局:
+* |x2-x1| < threshold
+* y2 > y1
+----
+网格布局:
+* x3 < x2 (换行)
+end note
+
+' 布局示意
+Child1 -[hidden]right-> Child2
+Child2 -[hidden]right-> Child3
+
+' 尺寸标注
+note left of Child1 : width\nheight
+note right of Child2 : gap
+
+legend right
+  |= 布局类型 |= 判断依据 |
+  | 水平布局 | 子元素top对齐，有水平间距 |
+  | 垂直布局 | 子元素left对齐，有垂直间距 |
+  | 网格布局 | 检测到元素换行 |
+endlegend
+
+@enduml 

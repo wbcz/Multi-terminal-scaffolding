@@ -1,0 +1,55 @@
+@startuml
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+skinparam ClassBackgroundColor #f0f0f0
+skinparam ClassBorderColor #666666
+
+title 布局属性分析
+
+class "布局信息 (LayoutInfo)" as LayoutInfo {
+  + direction: 'horizontal' | 'vertical'
+  + justify: 'start' | 'center' | 'end' | 'space-between'
+  + align: 'start' | 'center' | 'end' | 'stretch'
+  + wrap: boolean
+  + spacing: number
+}
+
+class "布局配置 (AutoFlexConfig)" as Config {
+  + recursive: boolean
+  + excludeSelectors: string[]
+  + defaultSpacing: number
+  + overrideRules: Map<string, LayoutProps>
+}
+
+class "布局属性 (LayoutProps)" as Props {
+  + direction: string
+  + spacing: number
+  + fill: boolean
+  + justify: string
+  + align: string
+  + wrap: boolean
+  + padding: number
+  + minWidth: number
+  + maxWidth: number
+}
+
+note right of Config
+  overrideRules 用于覆盖
+  自动检测的布局结果
+end note
+
+note right of LayoutInfo
+  通过分析 DOM 结构
+  得到的布局信息
+end note
+
+note right of Props
+  最终应用到元素上
+  的布局属性
+end note
+
+Config o-- Props : contains >
+LayoutInfo ..> Props : converts to >
+
+@enduml 

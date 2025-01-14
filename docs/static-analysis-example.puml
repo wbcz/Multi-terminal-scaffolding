@@ -1,0 +1,127 @@
+@startuml
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+skinparam rectangleFontColor black
+skinparam rectangleBorderColor #666666
+
+title Home 页面静态布局分析示例
+
+package "JSX结构分析" {
+  class Overview {
+    + type: section
+    + className: section
+    + children: List<Component>
+  }
+  
+  class Title {
+    + type: h2
+    + content: String
+  }
+  
+  class CardGroup {
+    + type: div
+    + className: card-group
+    + children: List<Card>
+  }
+  
+  class Card {
+    + type: Card
+    + className: card-item
+    + children: List<Component>
+  }
+}
+
+note right of Overview
+**结构特征**
+* 固定的两层结构
+* 标题 + 内容区布局
+* 内容区是卡片组
+end note
+
+note right of CardGroup
+**组件特征**
+* 数组映射渲染
+* 子元素统一类型
+* 固定数量: 3
+end note
+
+package "样式分析" {
+  class Style {
+    + display: flex
+    + flexDirection: column
+    + gap: 24px
+  }
+  
+  class SectionStyle {
+    + display: flex
+    + flexDirection: column
+    + gap: 16px
+  }
+  
+  class CardGroupStyle {
+    + display: flex
+    + gap: 16px
+    + flexWrap: wrap
+  }
+  
+  class CardItemStyle {
+    + flex: 1
+    + minWidth: 240px
+  }
+}
+
+note right of Style
+**样式特征**
+* 使用 Flex 布局
+* 统一的间距系统
+* 响应式布局支持
+end note
+
+package "数据分析" {
+  class CardData {
+    + type: Array
+    + length: Integer
+    + items: List<CardItem>
+  }
+}
+
+note right of CardData
+**数据特征**
+* 固定长度数组
+* 统一的数据结构
+* 无嵌套数据
+end note
+
+package "布局推断结果" {
+  class LayoutConfig {
+    + direction: String
+    + spacing: Integer
+    + recursive: Boolean
+    + rules: Map<String, Rule>
+  }
+}
+
+note right of LayoutConfig
+**推断依据**
+1. JSX结构:
+   - 嵌套层级
+   - 组件类型
+2. 样式定义:
+   - Flex属性
+   - 间距系统
+3. 数据特征:
+   - 数组映射
+   - 元素数量
+end note
+
+Overview --> Title
+Overview --> CardGroup
+CardGroup --> Card
+Style --> SectionStyle
+SectionStyle --> CardGroupStyle
+CardGroupStyle --> CardItemStyle
+CardData --> LayoutConfig
+Style --> LayoutConfig
+
+@enduml 

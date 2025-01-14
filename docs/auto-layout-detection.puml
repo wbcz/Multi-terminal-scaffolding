@@ -1,0 +1,177 @@
+@startuml 自动布局检测流程
+
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+skinparam activity {
+  BackgroundColor #f0f0f0
+  BorderColor #666666
+  FontColor black
+}
+
+title 自动布局检测流程
+
+start
+
+:获取元素信息;
+note right
+* 计算样式 (computedStyle)
+* 子元素列表 (children)
+* 元素位置和尺寸 (getBoundingClientRect)
+end note
+
+:初始化检测标志;
+note right
+* isVertical = true
+* isHorizontal = true
+* maxHorizontalGap = 0
+* maxVerticalGap = 0
+* hasWrapping = false
+end note
+
+:遍历相邻元素对;
+
+partition "布局特征分析" {
+  :方向检测;
+  note right
+  * 垂直偏移 > 5px: 非水平布局
+  * 水平偏移 > 5px: 非垂直布局
+  end note
+
+  :间距检测;
+  note right
+  * 水平间距 = curr.left - prev.right
+  * 垂直间距 = curr.top - prev.bottom
+  end note
+
+  :换行检测;
+  note right
+  * curr.left < prev.left: 发生换行
+  end note
+}
+
+if (能否确定方向?) then (yes)
+  if (isVertical && !isHorizontal) then (yes)
+    :确定为垂直布局;
+  else if (!isVertical && isHorizontal) then (yes)
+    :确定为水平布局;
+  endif
+else (no)
+  :计算容器宽高比;
+  if (width/height >= 1) then (yes)
+    :确定为水平布局;
+  else (no)
+    :确定为垂直布局;
+  endif
+endif
+
+:分析对齐方式;
+note right
+* justify-content
+* align-items
+end note
+
+partition "布局应用" {
+  :创建布局信息;
+  note right
+  * direction
+  * justify
+  * align
+  * wrap
+  * spacing
+  end note
+
+  :应用基础样式;
+  note right
+  * display: flex
+  * flex-direction
+  * gap
+  * justify-content
+  * align-items
+  * flex-wrap
+  end note
+
+  :应用覆盖规则;
+  note right
+  * 匹配选择器
+  * 应用自定义规则
+  end note
+
+  if (recursive?) then (yes)
+    :递归处理子元素;
+  else (no)
+    :完成布局;
+  endif
+}
+
+stop
+
+@enduml
+
+@startuml 布局分析示例
+
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+
+title 布局分析示例
+
+rectangle "容器元素" as Container {
+  rectangle "子元素1" as Child1 #lightblue
+  rectangle "子元素2" as Child2 #lightblue
+  rectangle "子元素3" as Child3 #lightblue
+}
+
+note bottom of Container
+方向判断:
+1. 水平布局: 子元素top对齐，有水平间距
+2. 垂直布局: 子元素left对齐，有垂直间距
+3. 网格布局: 检测到换行
+end note
+
+Child1 -[hidden]right-> Child2
+Child2 -[hidden]right-> Child3
+
+@enduml
+
+@startuml 布局属性分析
+
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+
+title 布局属性分析
+
+class "布局信息 (LayoutInfo)" as LayoutInfo {
+  + direction: 'horizontal' | 'vertical'
+  + justify: 'start' | 'center' | 'end' | 'space-between'
+  + align: 'start' | 'center' | 'end' | 'stretch'
+  + wrap: boolean
+  + spacing: number
+}
+
+class "布局配置 (AutoFlexConfig)" as Config {
+  + recursive: boolean
+  + excludeSelectors: string[]
+  + defaultSpacing: number
+  + overrideRules: {
+    [selector: string]: LayoutProps
+  }
+}
+
+class "布局属性 (LayoutProps)" as Props {
+  + direction: string
+  + spacing: number
+  + fill: boolean
+  + justify: string
+  + align: string
+  + wrap: boolean
+  + padding: number
+  + minWidth: number
+  + maxWidth: number
+}
+
+Config --> Props : 包含
+LayoutInfo --> Props : 转换为
+
+@enduml 

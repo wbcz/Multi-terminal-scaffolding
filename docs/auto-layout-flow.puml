@@ -1,0 +1,69 @@
+@startuml
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam defaultFontName "Microsoft YaHei"
+skinparam ActivityBackgroundColor #f0f0f0
+skinparam ActivityBorderColor #666666
+skinparam ActivityFontColor black
+
+title 自动布局检测流程
+
+start
+
+:获取元素信息;
+note right: 计算样式 (computedStyle)\n子元素列表 (children)\n元素位置和尺寸 (getBoundingClientRect)
+
+:初始化检测标志;
+note right: isVertical = true\nisHorizontal = true\nmaxHorizontalGap = 0\nmaxVerticalGap = 0\nhasWrapping = false
+
+:遍历相邻元素对;
+
+partition "布局特征分析" {
+  :方向检测;
+  note right: 垂直偏移 > 5px: 非水平布局\n水平偏移 > 5px: 非垂直布局
+
+  :间距检测;
+  note right: 水平间距 = curr.left - prev.right\n垂直间距 = curr.top - prev.bottom
+
+  :换行检测;
+  note right: curr.left < prev.left: 发生换行
+}
+
+if (能否确定方向?) then (yes)
+  if (isVertical && !isHorizontal) then (yes)
+    :确定为垂直布局;
+  elseif (!isVertical && isHorizontal) then (yes)
+    :确定为水平布局;
+  endif
+else (no)
+  :计算容器宽高比;
+  if (width/height >= 1) then (yes)
+    :确定为水平布局;
+  else (no)
+    :确定为垂直布局;
+  endif
+endif
+
+:分析对齐方式;
+note right: justify-content\nalign-items
+
+partition "布局应用" {
+  :创建布局信息;
+  note right: direction\njustify\nalign\nwrap\nspacing
+
+  :应用基础样式;
+  note right: display: flex\nflex-direction\ngap\njustify-content\nalign-items\nflex-wrap
+
+  :应用覆盖规则;
+  note right: 匹配选择器\n应用自定义规则
+
+  if (recursive?) then (yes)
+    :递归处理子元素;
+  else (no)
+    :完成布局;
+  endif
+}
+
+stop
+
+@enduml 
