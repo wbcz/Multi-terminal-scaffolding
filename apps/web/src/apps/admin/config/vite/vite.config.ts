@@ -30,6 +30,9 @@ export default defineConfig({
   },
   server: {
     ...baseConfig.server,
-    port: 3001,
+    host: 'admin.eleme.local',
+    port: 80,
+    strictPort: true, // 端口被占用时不会自动尝试下一个可用端口
+    open: true
   }
 }) 
