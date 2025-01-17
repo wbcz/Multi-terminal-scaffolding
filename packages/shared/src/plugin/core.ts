@@ -1,5 +1,8 @@
 import { EventEmitter } from 'events'
 
+// 定义钩子函数的类型
+type HookFunction<T = any> = (...args: any[]) => Promise<T> | T
+
 export interface IPlugin {
   name: string
   version: string
@@ -8,8 +11,8 @@ export interface IPlugin {
 
 export interface PluginContext {
   events: EventEmitter
-  hooks: Record<string, Function[]>
-  registerHook: (name: string, fn: Function) => void
+  hooks: Record<string, HookFunction[]>
+  registerHook: (name: string, fn: HookFunction) => void
   getPlugins: () => IPlugin[]
   getPlugin: (name: string) => IPlugin | undefined
 }
@@ -17,7 +20,7 @@ export interface PluginContext {
 export class PluginSystem {
   private plugins: IPlugin[] = []
   private events: EventEmitter
-  private hooks: Record<string, Function[]> = {}
+  private hooks: Record<string, HookFunction[]> = {}
 
   constructor() {
     this.events = new EventEmitter()
@@ -42,15 +45,15 @@ export class PluginSystem {
   }
 
   // 注册钩子
-  private registerHook(name: string, fn: Function) {
+  private registerHook(name: string, fn: HookFunction): void {
     if (!this.hooks[name]) {
       this.hooks[name] = []
     }
     this.hooks[name].push(fn)
   }
 
-  // 执行钩子
-  async executeHook(name: string, ...args: any[]) {
+  // 串行执行钩子（按顺序等待每个钩子完成）
+  async executeHookSerial(name: string, ...args: any[]) {
     const hooks = this.hooks[name] || []
     const results = []
     
@@ -58,12 +61,35 @@ export class PluginSystem {
       try {
         const result = await hook(...args)
         results.push(result)
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Error executing hook ${name}:`, error)
       }
     }
     
     return results
+  }
+
+  // 并行执行钩子（所有钩子同时执行）
+  async executeHookParallel(name: string, ...args: any[]) {
+    const hooks = this.hooks[name] || []
+    
+    try {
+      const results = await Promise.all(
+        hooks.map(hook => hook(...args).catch((error: unknown) => {
+          console.error(`Error executing hook ${name}:`, error)
+          return null
+        }))
+      )
+      return results.filter(result => result !== null)
+    } catch (error: unknown) {
+      console.error(`Error executing hooks ${name}:`, error)
+      return []
+    }
+  }
+
+  // 默认的执行方法（可以选择使用串行或并行）
+  async executeHook(name: string, ...args: any[]) {
+    return this.executeHookSerial(name, ...args)
   }
 
   // 获取插件
