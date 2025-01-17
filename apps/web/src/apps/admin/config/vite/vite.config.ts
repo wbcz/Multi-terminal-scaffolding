@@ -6,13 +6,16 @@ import { resolve } from 'path'
 export default defineConfig({
   ...baseConfig,
   base: './',
+  root: resolve(__dirname, '../..'),
   build: {
     sourcemap: true,
     chunkSizeWarningLimit: 1500,
     outDir: resolve(__dirname, '../../dist'),
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(__dirname, '../../index.html'),
+      input: {
+        index: resolve(__dirname, '../../index.html')
+      },
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
