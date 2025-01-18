@@ -19,7 +19,7 @@
 ├── apps
 │   └── web                 # Web 应用
 │       └── src
-│           └── apps        # 多页面应用
+│           └── modoules        # 微应用
 │               ├── admin   # 管理后台
 │               ├── merchant # 商户端
 │               └── platform # 平台端
@@ -28,6 +28,7 @@
 │   ├── hooks              # 通用 Hooks
 │   ├── shared             # 基础设施
 │   │   └── plugin         # 插件系统
+│   │   └── middleware     # 中间件
 │   ├── types              # 类型定义
 │   ├── ui                 # UI 组件库
 │   └── utils              # 工具函数
