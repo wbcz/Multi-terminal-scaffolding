@@ -1,4 +1,25 @@
-import { EventEmitter } from 'events'
+// 创建一个简单的事件发射器实现
+class SimpleEventEmitter {
+  private listeners: Record<string, Array<(...args: any[]) => void>> = {}
+
+  emit(event: string, ...args: any[]) {
+    const eventListeners = this.listeners[event] || []
+    eventListeners.forEach(listener => listener(...args))
+  }
+
+  on(event: string, listener: (...args: any[]) => void) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = []
+    }
+    this.listeners[event].push(listener)
+    return () => this.off(event, listener)
+  }
+
+  off(event: string, listener: (...args: any[]) => void) {
+    if (!this.listeners[event]) return
+    this.listeners[event] = this.listeners[event].filter(l => l !== listener)
+  }
+}
 
 // 定义钩子函数的类型
 type HookFunction<T = any> = (...args: any[]) => Promise<T> | T
@@ -10,7 +31,7 @@ export interface IPlugin {
 }
 
 export interface PluginContext {
-  events: EventEmitter
+  events: SimpleEventEmitter
   hooks: Record<string, HookFunction[]>
   registerHook: (name: string, fn: HookFunction) => void
   getPlugins: () => IPlugin[]
@@ -19,11 +40,11 @@ export interface PluginContext {
 
 export class PluginSystem {
   private plugins: IPlugin[] = []
-  private events: EventEmitter
+  private events: SimpleEventEmitter
   private hooks: Record<string, HookFunction[]> = {}
 
   constructor() {
-    this.events = new EventEmitter()
+    this.events = new SimpleEventEmitter()
   }
 
   // 注册插件
