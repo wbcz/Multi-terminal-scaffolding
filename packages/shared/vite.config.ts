@@ -1,11 +1,19 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type UserConfig } from 'vite'
 import { resolve } from 'path'
+import react from '@vitejs/plugin-react'
 import dts from 'vite-plugin-dts'
 
-// 判断是否为生产环境
 const isProd = process.env.NODE_ENV === 'production'
 
+// https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [
+    react() as any,
+    dts({
+      rollupTypes: true,
+      outDir: 'dist'
+    })
+  ],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -13,31 +21,20 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       fileName: (format) => `index.${format}.js`
     },
+    minify: isProd ? 'esbuild' : false,
+    sourcemap: !isProd,
     rollupOptions: {
-      external: ['react', 'react-dom', 'antd', '@ant-design/icons'],
+      external: ['react', 'react-dom', 'events'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
-          antd: 'antd',
-          '@ant-design/icons': 'icons'
+          events: 'EventEmitter'
         }
       }
-    },
-    sourcemap: true,
-    // 只在生产环境压缩
-    minify: isProd ? 'esbuild' : false
-  },
-  plugins: [
-    dts({
-      insertTypesEntry: true,
-      include: ['src/**/*'],
-      outDir: 'dist/types'
-    })
-  ],
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
     }
+  },
+  optimizeDeps: {
+    include: ['events']
   }
-}) 
+} as UserConfig) 
