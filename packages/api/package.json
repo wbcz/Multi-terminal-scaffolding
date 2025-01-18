@@ -1,18 +1,38 @@
 {
-  "name": "@eleme/api",
+  "name": "@wbcz/api",
   "version": "0.0.1",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
   "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@eleme/types": "workspace:*",
     "@eleme/utils": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.3"
+    "@types/node": "^20.11.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.0.12",
+    "vite-plugin-dts": "^3.7.2"
   }
 }

@@ -1,4 +1,4 @@
-import { http } from '@eleme/shared';
+import { http } from '@eleme/utils';
 import type { User, ApiResponse, PageResult } from '@eleme/types';
 
 interface GetUsersParams {
@@ -17,18 +17,30 @@ interface UpdateUserStatusParams {
   status: 'active' | 'disabled';
 }
 
-export const userApi = {
+type UserApi = {
+  getUsers: (params: GetUsersParams) => Promise<ApiResponse<PageResult<User>>>;
+  updateStatus: (params: UpdateUserStatusParams) => Promise<ApiResponse<null>>;
+  getUser: (id: number) => Promise<ApiResponse<User>>;
+};
+
+export const userApi: UserApi = {
   // 获取用户列表
-  getUsers: (params: GetUsersParams) =>
-    http.get<ApiResponse<PageResult<User>>>('/api/admin/users', { params }),
+  getUsers: async (params: GetUsersParams) => {
+    const res = await http.get<ApiResponse<PageResult<User>>>('/api/admin/users', { params });
+    return res.data;
+  },
 
   // 更新用户状态
-  updateStatus: (params: UpdateUserStatusParams) =>
-    http.put<ApiResponse<null>>(`/api/admin/users/${params.userId}/status`, {
+  updateStatus: async (params: UpdateUserStatusParams) => {
+    const res = await http.put<ApiResponse<null>>(`/api/admin/users/${params.userId}/status`, {
       status: params.status
-    }),
+    });
+    return res.data;
+  },
 
   // 获取用户详情
-  getUser: (id: number) =>
-    http.get<ApiResponse<User>>(`/api/admin/users/${id}`),
+  getUser: async (id: number) => {
+    const res = await http.get<ApiResponse<User>>(`/api/admin/users/${id}`);
+    return res.data;
+  },
 }; 

@@ -1,5 +1,5 @@
 import type { Product, ApiResponse, PageResult } from '@eleme/types';
-import { mockApi } from '../../../apps/web/src/modules/merchant/mock/api';
+import { mockApi } from './mock/api';
 
 interface GetProductsParams {
   page?: number;
@@ -34,12 +34,16 @@ export const productApi = {
     mockApi.updateStatus(params),
 
   // 获取商品详情
-  getProduct: (id: number) =>
-    Promise.resolve({
+  getProduct: async (id: number): Promise<ApiResponse<Product>> => {
+    const res = await mockApi.getProducts({ page: 1, pageSize: 1 });
+    const product = res.data.list.find(p => p.id === id);
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    return {
       code: 0,
       message: 'success',
-      data: mockApi.getProducts({ page: 1, pageSize: 1 }).then(res => 
-        res.data.list.find(p => p.id === id)
-      )
-    } as ApiResponse<Product>),
+      data: product
+    };
+  },
 }; 
