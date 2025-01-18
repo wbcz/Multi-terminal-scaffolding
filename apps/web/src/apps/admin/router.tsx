@@ -1,42 +1,28 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
-import Layout from './layouts/Layout'
-
-console.log('Environment:', {
-  baseUrl: import.meta.env.VITE_APP_BASE_URL,
-  mode: import.meta.env.MODE,
-  dev: import.meta.env.DEV
-})
+import { createBrowserRouter } from 'react-router-dom'
+import { Layout } from './layouts'
+import { Dashboard } from './pages/dashboard'
+import { Login } from './pages/login'
+import { NotFound } from './pages/404'
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
-    errorElement: <div>出错了！</div>,
     children: [
       {
         index: true,
-        lazy: async () => {
-          console.log('Loading dashboard component...')
-          return import('./pages/dashboard')
-        },
-        errorElement: <div>加载出错</div>,
-      },
-      {
-        path: 'users',
-        lazy: async () => {
-          console.log('Loading users component...')
-          return import('./pages/users')
-        },
-        errorElement: <div>加载出错</div>,
-      },
-      {
-        path: '*',
-        element: <Navigate to="/" replace />,
-      },
-    ],
+        element: <Dashboard />
+      }
+    ]
   },
-], {
-  basename: import.meta.env.VITE_APP_BASE_URL || '/admin'
-})
+  {
+    path: '/login',
+    element: <Login />
+  },
+  {
+    path: '*',
+    element: <NotFound />
+  }
+])
 
 export default router 

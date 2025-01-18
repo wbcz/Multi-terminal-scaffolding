@@ -2,48 +2,12 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>%VITE_APP_TITLE%</title>
-    <style>
-      /* 内联样式确保立即生效 */
-      #root {
-        min-height: 100vh;
-        background: #f0f2f5;
-      }
-      .loading {
-        padding: 20px;
-        text-align: center;
-        color: #333;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      }
-    </style>
+    <title>饿了么后台管理系统</title>
   </head>
   <body>
-    <!-- 添加一个脚本来验证 DOM 加载 -->
-    <script>
-      console.log('DOM loading...');
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM loaded');
-        const root = document.getElementById('root');
-        console.log('Root element:', root);
-        
-        // 添加一个简单的交互测试
-        const loading = root.querySelector('.loading');
-        if (loading) {
-          loading.innerHTML += '<br><button onclick="alert(\'JS works!\')">Click me to test JS</button>';
-        }
-      });
-    </script>
-
-    <div id="root">
-      <div class="loading">
-        Loading application...
-        <br />
-        <small style="color: #666;">如果你看到这个信息，说明 HTML 已经加载，但 React 还没有接管渲染</small>
-      </div>
-    </div>
-    
+    <div id="root"></div>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html> 
