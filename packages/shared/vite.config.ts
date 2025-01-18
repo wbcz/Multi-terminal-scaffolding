@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import dts from 'vite-plugin-dts'
 
+// 判断是否为生产环境
+const isProd = process.env.NODE_ENV === 'production'
+
 export default defineConfig({
   build: {
     lib: {
@@ -22,7 +25,8 @@ export default defineConfig({
       }
     },
     sourcemap: true,
-    minify: 'esbuild'
+    // 只在生产环境压缩
+    minify: isProd ? 'esbuild' : false
   },
   plugins: [
     dts({

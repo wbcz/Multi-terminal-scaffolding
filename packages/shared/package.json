@@ -7,17 +7,29 @@
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.cjs.js",
-      "types": "./dist/types/index.d.ts"
+      "development": {
+        "import": "./src/index.ts",
+        "types": "./src/index.ts"
+      },
+      "production": {
+        "import": "./dist/index.es.js",
+        "require": "./dist/index.cjs.js",
+        "types": "./dist/types/index.d.ts"
+      },
+      "default": {
+        "import": "./dist/index.es.js",
+        "require": "./dist/index.cjs.js",
+        "types": "./dist/types/index.d.ts"
+      }
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
-    "dev": "vite build --watch",
-    "build": "vite build",
+    "dev": "cross-env NODE_ENV=development vite build --watch",
+    "build": "cross-env NODE_ENV=production vite build",
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist"
   },
@@ -33,6 +45,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
+    "cross-env": "^7.0.3",
     "rimraf": "^5.0.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
