@@ -9,6 +9,7 @@ const app = new AdminApplication()
 
 // 启动应用
 app.bootstrap().then(() => {
+    console.log('app bootstrap')
   // 渲染 React 应用
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

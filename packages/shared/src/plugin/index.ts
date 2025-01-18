@@ -5,7 +5,7 @@ export * from './plugins/theme'
 export * from './plugins/storage'
 
 // 使用示例
-import { PluginSystem } from './core'
+import { PluginSystem, IPlugin } from './core'
 import { LoggerPlugin } from './plugins/logger'
 import { AuthPlugin } from './plugins/auth'
 import { ThemePlugin } from './plugins/theme'

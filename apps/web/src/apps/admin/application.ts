@@ -62,12 +62,13 @@ export class AdminApplication {
   }
 
   // 启动应用
-  async bootstrap() {
+  async bootstrap(): Promise<void> {
+    console.log('core')
     // 注册核心插件
     await this.registerPlugin(new LoggerPlugin())
     await this.registerPlugin(new StoragePlugin())
     await this.registerPlugin(new AuthPlugin())
-
+    console.log('core plugins registered')
     // 配置认证中间件
     const authPlugin = this.pluginSystem.getPlugin('auth') as AuthPlugin
     if (authPlugin) {
@@ -80,9 +81,10 @@ export class AdminApplication {
         }
       }))
     }
-
+    console.log('auth middleware configured')
     // 初始化完成
     console.log('Admin application bootstrapped')
+    return Promise.resolve()
   }
 
   private parseQueryString(url: string): Record<string, string> {

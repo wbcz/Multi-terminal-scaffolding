@@ -37,4 +37,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ['events']
   }
-} as UserConfig) 
+} as UserConfig) }) 

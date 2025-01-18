@@ -1,4 +1,4 @@
-import { Context, Middleware } from '../types'
+import { Context, Middleware, Next } from '../types'
 
 export interface ErrorMiddlewareOptions {
   debug?: boolean
