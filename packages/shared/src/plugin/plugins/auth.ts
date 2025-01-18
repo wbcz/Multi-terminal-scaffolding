@@ -1,4 +1,5 @@
 import { IPlugin, PluginContext } from '../core'
+import { StoragePlugin } from './storage'
 
 interface User {
   id: string
@@ -6,13 +7,25 @@ interface User {
   roles: string[]
 }
 
+const AUTH_STORAGE_KEY = 'auth:currentUser'
+const SESSION_EXPIRY_TIME = 24 * 60 * 60 * 1000 // 24小时
+
 export class AuthPlugin implements IPlugin {
   name = 'auth'
   version = '1.0.0'
   private currentUser: User | null = null
   private initialized = false
+  private context: PluginContext | null = null
 
   async install(context: PluginContext) {
+    this.context = context
+    
+    // 检查存储插件是否已注册
+    const storagePlugin = context.getPlugin('storage')
+    if (!storagePlugin || !(storagePlugin instanceof StoragePlugin)) {
+      throw new Error('Storage plugin is required but not found')
+    }
+
     // 初始化异步操作
     await this.initialize()
 
@@ -32,17 +45,18 @@ export class AuthPlugin implements IPlugin {
     }
 
     try {
-      // 从本地存储或 API 恢复用户会话
-      const savedUser = localStorage.getItem('currentUser')
-      if (savedUser) {
-        this.currentUser = JSON.parse(savedUser)
+      if (!this.context) {
+        throw new Error('Plugin context not initialized')
       }
 
-      // 可以添加其他异步初始化逻辑
-      // 例如:
-      // - 验证 token 有效性
-      // - 获取用户权限列表
-      // - 同步远程配置
+      // 从存储插件恢复用户会话
+      const getItemHooks = this.context.hooks['getItem'] || []
+      if (getItemHooks.length > 0) {
+        const savedUser = await getItemHooks[0](AUTH_STORAGE_KEY)
+        if (savedUser && typeof savedUser === 'object') {
+          this.currentUser = savedUser as User
+        }
+      }
 
       this.initialized = true
     } catch (error) {
@@ -60,9 +74,18 @@ export class AuthPlugin implements IPlugin {
   }
 
   private async afterAuth(user: User) {
+    if (!this.context) {
+      throw new Error('Plugin context not initialized')
+    }
+
     this.currentUser = user
-    // 持久化用户信息
-    localStorage.setItem('currentUser', JSON.stringify(user))
+    // 使用存储插件持久化用户信息，设置过期时间
+    const setItemHooks = this.context.hooks['setItem'] || []
+    if (setItemHooks.length > 0) {
+      await setItemHooks[0](AUTH_STORAGE_KEY, user, {
+        expireIn: SESSION_EXPIRY_TIME
+      })
+    }
     console.log('User authenticated:', user.name)
   }
 
@@ -76,15 +99,51 @@ export class AuthPlugin implements IPlugin {
     return this.currentUser.roles.includes(requiredRole)
   }
 
-  private onLogin(user: User) {
+  private async onLogin(user: User) {
+    if (!this.context) {
+      throw new Error('Plugin context not initialized')
+    }
+
     this.currentUser = user
-    localStorage.setItem('currentUser', JSON.stringify(user))
+    // 使用存储插件持久化用户信息，设置过期时间
+    const setItemHooks = this.context.hooks['setItem'] || []
+    if (setItemHooks.length > 0) {
+      await setItemHooks[0](AUTH_STORAGE_KEY, user, {
+        expireIn: SESSION_EXPIRY_TIME
+      })
+    }
     console.log('User logged in:', user.name)
   }
 
-  private onLogout() {
+  private async onLogout() {
+    if (!this.context) {
+      throw new Error('Plugin context not initialized')
+    }
+
     this.currentUser = null
-    localStorage.removeItem('currentUser')
+    // 使用存储插件清除用户信息
+    const removeItemHooks = this.context.hooks['removeItem'] || []
+    if (removeItemHooks.length > 0) {
+      await removeItemHooks[0](AUTH_STORAGE_KEY)
+    }
     console.log('User logged out')
+  }
+
+  // 公共方法
+  async getCurrentUser(): Promise<User | null> {
+    if (!this.initialized) {
+      await this.initialize()
+    }
+    return this.currentUser
+  }
+
+  async isAuthenticated(): Promise<boolean> {
+    const user = await this.getCurrentUser()
+    return user !== null
+  }
+
+  async hasRole(role: string): Promise<boolean> {
+    const user = await this.getCurrentUser()
+    return user !== null && user.roles.includes(role)
   }
 }
