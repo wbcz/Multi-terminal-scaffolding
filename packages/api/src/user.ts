@@ -1,30 +1,34 @@
-import { http } from '@eleme/utils';
-import type { User, ApiResponse } from '@eleme/types';
+import { http } from '@eleme/shared';
+import type { User, ApiResponse, PageResult } from '@eleme/types';
 
-export interface LoginParams {
-  username: string;
-  password: string;
+interface GetUsersParams {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  sortField?: string;
+  sortOrder?: string;
 }
 
-export interface LoginResult {
-  token: string;
-  user: User;
+interface UpdateUserStatusParams {
+  userId: number;
+  status: 'active' | 'disabled';
 }
 
 export const userApi = {
-  login(params: LoginParams) {
-    return http.post<LoginResult>('/api/login', params);
-  },
+  // 获取用户列表
+  getUsers: (params: GetUsersParams) =>
+    http.get<ApiResponse<PageResult<User>>>('/api/admin/users', { params }),
 
-  getCurrentUser() {
-    return http.get<User>('/api/user/current');
-  },
+  // 更新用户状态
+  updateStatus: (params: UpdateUserStatusParams) =>
+    http.put<ApiResponse<null>>(`/api/admin/users/${params.userId}/status`, {
+      status: params.status
+    }),
 
-  updateProfile(data: Partial<User>) {
-    return http.put<User>('/api/user/profile', data);
-  },
-
-  logout() {
-    return http.post<void>('/api/logout');
-  },
+  // 获取用户详情
+  getUser: (id: number) =>
+    http.get<ApiResponse<User>>(`/api/admin/users/${id}`),
 }; 
