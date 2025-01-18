@@ -38,8 +38,9 @@ const router = createBrowserRouter([
 ], {
   basename: import.meta.env.VITE_APP_BASE_URL || '/admin',
   future: {
-    v7_relativeSplatPath: true
-  }
+    v7_relativeSplatPath: true,
+    v7_startTransition: true
+  } as any
 })
 
 export default router 
