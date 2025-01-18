@@ -1,15 +1,24 @@
-import { defineConfig } from 'vite'
-import { baseConfig } from './src/config/vite.config.base'
+import { defineConfig, UserConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
-// https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  // 根据 mode 加载对应应用目录下的配置
-  const envDir = mode ? `./src/apps/${mode}/config` : undefined
-  const appConfig = mode ? require(`./src/apps/${mode}/config/vite/vite.config.ts`).default : {}
+interface ConfigEnv {
+  mode: string
+}
 
-  return {
-    ...baseConfig,
+export default ({ mode }: ConfigEnv) => {
+  const envDir = mode ? resolve(__dirname, `./src/modules/${mode}/config`) : undefined
+  const appConfig = mode ? require(`./src/modules/${mode}/config/vite/vite.config.ts`).default : {}
+
+  return defineConfig({
     ...appConfig,
-    envDir, // 设置环境配置文件目录
-  }
-})
+    plugins: [react()],
+    envDir,
+    envPrefix: 'VITE_',
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src')
+      }
+    }
+  })
+}
