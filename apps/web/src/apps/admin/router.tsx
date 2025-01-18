@@ -36,7 +36,10 @@ const router = createBrowserRouter([
     ],
   },
 ], {
-  basename: import.meta.env.VITE_APP_BASE_URL || '/admin'
+  basename: import.meta.env.VITE_APP_BASE_URL || '/admin',
+  future: {
+    v7_relativeSplatPath: true
+  }
 })
 
 export default router 
