@@ -4,15 +4,13 @@ import {
   AuthMiddleware,
   ErrorMiddleware,
   type Middleware,
-  type Context 
-} from '@shared/middleware'
-import { 
+  type Context,
   PluginSystem,
   AuthPlugin, 
   StoragePlugin,
   LoggerPlugin,
   type IPlugin 
-} from '@shared/plugin'
+} from '@wbcz/shared'
 
 export class AdminApplication {
   private middlewareManager = createMiddlewareManager(process.env.NODE_ENV === 'development')
