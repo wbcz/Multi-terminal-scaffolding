@@ -1,0 +1,116 @@
+@startuml Android WebView Loading Flow
+
+start
+
+:Activity onCreate;
+
+partition "WebView 初始化" {
+    :创建 WebView 实例;
+    :配置 WebView 设置;
+    note right
+        1. 启用 JavaScript
+        2. 启用 DOM Storage
+        3. 配置 WebViewClient
+        4. 配置缓存策略
+    end note
+}
+
+partition "JSBridge 初始化" {
+    :获取 JSBridge 单例;
+    
+    :注入 JavaScriptInterface;
+    note right: 添加名为 ElemeJSBridge 的接口
+    
+    fork
+        :注册默认处理器;
+        note right
+            1. 设备信息
+            2. 网络状态
+            3. 基础功能
+        end note
+    fork again
+        :注册自定义处理器;
+        note right
+            1. 分享功能
+            2. 支付功能
+            3. 扫码功能
+            4. 其他业务功能
+        end note
+    end fork
+}
+
+partition "页面加载" {
+    :WebView loadUrl;
+    
+    fork
+        :开始加载页面;
+        :onPageStarted;
+    fork again
+        :注入 Bridge 脚本;
+        note right
+            1. 检查 Bridge 是否存在
+            2. 注入 Bridge 核心代码
+            3. 设置回调数组
+        end note
+    end fork
+    
+    if (Bridge 是否就绪?) then (是)
+        :直接初始化 Bridge;
+    else (否)
+        :等待 Bridge 脚本加载;
+        :执行回调初始化;
+    endif
+    
+    :页面继续加载;
+    
+    if (是否加载完成?) then (是)
+        :onPageFinished;
+        :处理消息队列;
+        note right
+            1. 检查待处理消息
+            2. 执行队列中的调用
+            3. 清空消息队列
+        end note
+    else (否)
+        :onReceivedError;
+        :错误处理;
+    endif
+}
+
+partition "Bridge 就绪" {
+    if (是否有待处理消息?) then (是)
+        :执行消息队列中的调用;
+        note right
+            1. 同步调用直接执行
+            2. 异步调用通过回调处理
+        end note
+    else (否)
+        :等待 JavaScript 调用;
+    endif
+}
+
+partition "页面交互" {
+    fork
+        :JavaScript 调用 Native;
+        :通过 JavaScriptInterface 处理;
+        :执行原生方法;
+        :返回结果给 JavaScript;
+    fork again
+        :Native 调用 JavaScript;
+        :生成回调 ID;
+        :执行 JavaScript 方法;
+        :接收 JavaScript 回调;
+    end fork
+}
+
+partition "资源清理" {
+    :Activity onDestroy;
+    :清空消息队列;
+    :清空回调映射;
+    :清空处理器;
+    :销毁 Bridge 实例;
+}
+
+stop
+
+@enduml 
