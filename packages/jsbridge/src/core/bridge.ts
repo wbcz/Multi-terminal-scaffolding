@@ -1,4 +1,4 @@
-import { BridgeOptions, BridgeResponse, BridgeHandler, BridgeCallback } from '../types/bridge';
+import { BridgeOptions, BridgeResponse, BridgeHandler, BridgeCallback, MessageQueueItem } from '../types/bridge';
 
 export class JSBridge {
   private static instance: JSBridge;
@@ -9,6 +9,8 @@ export class JSBridge {
   private callbacks: Map<string, BridgeCallback>;
   private readyPromise: Promise<void>;
   private readyResolver?: () => void;
+  private messageQueue: MessageQueueItem[] = [];
+  private isReady: boolean = false;
 
   private constructor(options: BridgeOptions = {}) {
     this.namespace = options.namespace || 'ElemeJSBridge';
@@ -85,7 +87,64 @@ export class JSBridge {
    */
   private notifyBridgeReady(): void {
     this.log('Bridge is ready');
+    this.isReady = true;
     this.readyResolver?.();
+    // 处理队列中的消息
+    this.flushMessageQueue();
+  }
+
+  /**
+   * 处理消息队列中的所有消息
+   */
+  private flushMessageQueue(): void {
+    this.log(`Flushing message queue, ${this.messageQueue.length} messages`);
+    while (this.messageQueue.length > 0) {
+      const message = this.messageQueue.shift();
+      if (message) {
+        this.doCall(message.method, message.data, message.callback);
+      }
+    }
+  }
+
+  /**
+   * 实际执行调用 Native 方法的逻辑
+   */
+  private doCall(method: string, params?: any, callback?: BridgeCallback): void {
+    const callbackId = callback ? `cb_${Date.now()}` : undefined;
+    
+    if (callback && callbackId) {
+      const timeoutId = setTimeout(() => {
+        this.callbacks.delete(callbackId);
+        callback({
+          code: 504,
+          message: `Call to ${method} timed out after ${this.timeout}ms`
+        });
+      }, this.timeout);
+
+      this.callbacks.set(callbackId, (response) => {
+        clearTimeout(timeoutId);
+        this.callbacks.delete(callbackId);
+        callback(response);
+      });
+    }
+
+    const message = {
+      method,
+      params,
+      callbackId,
+    };
+
+    this.log(`Calling native method: ${method}`, message);
+    if ((window as any).ElemeJSBridge?.call) {
+      (window as any).ElemeJSBridge.call(JSON.stringify(message));
+    } else {
+      if (callback) {
+        callback({
+          code: 500,
+          message: 'JSBridge not initialized'
+        });
+      }
+    }
   }
 
   /**
@@ -95,39 +154,28 @@ export class JSBridge {
    * @returns Promise<BridgeResponse>
    */
   async call<T = any>(method: string, params?: any): Promise<BridgeResponse<T>> {
-    try {
-      // 等待 Bridge 就绪
-      await this.waitForReady(this.timeout);
-      
-      return new Promise((resolve, reject) => {
-        const callbackId = `cb_${Date.now()}`;
-        const timeoutId = setTimeout(() => {
-          this.callbacks.delete(callbackId);
-          reject(new Error(`Call to ${method} timed out after ${this.timeout}ms`));
-        }, this.timeout);
-
-        this.callbacks.set(callbackId, (response) => {
-          clearTimeout(timeoutId);
-          this.callbacks.delete(callbackId);
+    return new Promise((resolve, reject) => {
+      const callback = (response: BridgeResponse) => {
+        if (response.code === 200) {
           resolve(response as BridgeResponse<T>);
-        });
-
-        const message = {
-          method,
-          params,
-          callbackId,
-        };
-
-        this.log(`Calling native method: ${method}`, message);
-        if ((window as any).ElemeJSBridge?.call) {
-          (window as any).ElemeJSBridge.call(JSON.stringify(message));
         } else {
-          reject(new Error('JSBridge not initialized'));
+          reject(new Error(response.message));
         }
-      });
-    } catch (error) {
-      throw error instanceof Error ? error : new Error('Unknown error');
-    }
+      };
+
+      if (!this.isReady) {
+        // Bridge还未就绪，将消息加入队列
+        this.log(`Bridge not ready, queueing message: ${method}`);
+        this.messageQueue.push({
+          method,
+          data: params,
+          callback
+        });
+      } else {
+        // Bridge已就绪，直接执行
+        this.doCall(method, params, callback);
+      }
+    });
   }
 
   private handleNativeCall(message: { method: string; params?: any; callbackId?: string }): void {
