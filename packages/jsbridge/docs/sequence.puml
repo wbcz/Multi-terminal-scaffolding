@@ -1,0 +1,98 @@
+@startuml JSBridge Sequence
+
+participant WebApp as "Web App"
+participant JSBridge as "JSBridge SDK"
+participant MessageQueue as "Message Queue"
+participant WebView as "WebView Bridge"
+participant Native as "Native App"
+
+== 初始化阶段 ==
+
+WebApp -> JSBridge: createJSBridge()
+activate JSBridge
+
+JSBridge -> JSBridge: setupBridge()
+note right: 检查桥接环境
+
+alt WebView Bridge 已存在
+    JSBridge -> WebView: 直接初始化
+else WebView Bridge 未加载
+    JSBridge -> JSBridge: 注入桥接脚本
+    JSBridge -> MessageQueue: 创建消息队列
+end
+
+== 注册阶段 ==
+
+WebApp -> JSBridge: register(method, handler)
+JSBridge -> WebView: registerHandler(method)
+WebView -> Native: 注册JS回调方法
+
+== 异步调用流程 ==
+
+WebApp -> JSBridge: call(method, params)
+activate JSBridge
+
+alt Bridge未就绪
+    JSBridge -> MessageQueue: 加入消息队列
+    MessageQueue --> WebApp: return {code: 202, message: "Message queued"}
+else Bridge已就绪
+    JSBridge -> JSBridge: 生成callbackId
+    JSBridge -> WebView: callHandler(method, params, callbackId)
+    WebView -> Native: 调用原生方法
+    
+    Native --> WebView: 返回结果
+    WebView --> JSBridge: 通过callback返回
+    JSBridge --> WebApp: Promise resolve结果
+end
+
+== 同步调用流程 ==
+
+WebApp -> JSBridge: callSync(method, params)
+activate JSBridge
+
+alt Bridge未就绪
+    JSBridge -> MessageQueue: 加入消息队列
+    MessageQueue --> WebApp: return {code: 202, message: "Message queued"}
+else Bridge已就绪
+    JSBridge -> WebView: callSyncHandler(method, params)
+    WebView -> Native: 同步调用原生方法
+    Native --> WebView: 立即返回结果
+    WebView --> JSBridge: 直接返回结果
+    JSBridge --> WebApp: 返回同步结果
+end
+
+== 原生调用JS ==
+
+Native -> WebView: 调用JS方法
+WebView -> JSBridge: 触发已注册的handler
+JSBridge -> JSBridge: 执行对应的处理函数
+JSBridge --> WebView: 返回处理结果
+WebView --> Native: 通过callback返回
+
+== 消息队列处理 ==
+
+JSBridge -> JSBridge: Bridge就绪
+activate JSBridge
+
+loop 遍历消息队列
+    JSBridge -> MessageQueue: 获取队列消息
+    alt 同步消息
+        JSBridge -> WebView: callSyncHandler
+        WebView --> JSBridge: 返回结果
+    else 异步消息
+        JSBridge -> WebView: callHandler
+        WebView --> JSBridge: 通过callback返回
+    end
+end
+
+JSBridge -> MessageQueue: 清空队列
+deactivate JSBridge
+
+== 销毁阶段 ==
+
+WebApp -> JSBridge: destroy()
+JSBridge -> MessageQueue: 清空消息队列
+JSBridge -> JSBridge: 清空回调和处理器
+JSBridge -> JSBridge: 重置状态
+
+@enduml 

@@ -1,0 +1,92 @@
+@startuml JSBridge Flow
+
+start
+
+:页面加载开始;
+
+if (检查 WebViewJavascriptBridge 是否存在?) then (是)
+    :直接初始化 Bridge;
+else (否)
+    if (检查 WVJBCallbacks 是否存在?) then (是)
+        :添加初始化回调;
+    else (否)
+        :创建 WVJBCallbacks 数组;
+        :注入 Bridge 脚本;
+        note right: 异步加载 WebViewJavascriptBridge.js
+    endif
+endif
+
+:创建 JSBridge 单例;
+note right
+    初始化:
+    1. 消息队列
+    2. 回调映射
+    3. 处理器映射
+end note
+
+fork
+    :注册 JS 方法;
+    note right: 供原生调用
+fork again
+    :等待 Bridge 就绪;
+    note right: ready() 方法
+end fork
+
+if (Bridge 是否就绪?) then (是)
+    :处理消息队列;
+else (否)
+    :继续等待;
+endif
+
+partition "JS 调用原生" {
+    if (调用方式?) then (异步调用)
+        if (Bridge 就绪?) then (是)
+            :生成回调 ID;
+            :设置超时定时器;
+            :调用原生方法;
+            :等待回调结果;
+            if (是否超时?) then (是)
+                :返回超时错误;
+            else (否)
+                :处理返回结果;
+            endif
+        else (否)
+            :加入消息队列;
+            :返回排队状态;
+        endif
+    else (同步调用)
+        if (Bridge 就绪?) then (是)
+            if (同步方法可用?) then (是)
+                :同步调用原生方法;
+                :立即返回结果;
+            else (否)
+                :返回方法未实现错误;
+            endif
+        else (否)
+            :加入消息队列;
+            :返回排队状态;
+        endif
+    endif
+}
+
+partition "原生调用 JS" {
+    :接收原生调用;
+    if (处理器是否存在?) then (是)
+        :执行注册的处理器;
+        :返回处理结果;
+    else (否)
+        :返回方法未找到错误;
+    endif
+}
+
+partition "页面销毁" {
+    :调用 destroy 方法;
+    :清空消息队列;
+    :清空回调映射;
+    :清空处理器映射;
+    :重置 Bridge 状态;
+}
+
+stop
+
+@enduml 

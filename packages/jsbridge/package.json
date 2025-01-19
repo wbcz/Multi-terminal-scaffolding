@@ -1,0 +1,30 @@
+{
+  "name": "@eleme/jsbridge",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@eleme/utils": "workspace:*",
+    "@eleme/types": "workspace:*",
+    "@eleme/adapters": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-native": "^0.72.0",
+    "@tarojs/taro": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-native": "^0.72.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0"
+  }
+} 
