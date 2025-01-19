@@ -7,6 +7,8 @@ export class JSBridge {
   private debug: boolean;
   private handlers: Map<string, BridgeHandler>;
   private callbacks: Map<string, BridgeCallback>;
+  private readyPromise: Promise<void>;
+  private readyResolver?: () => void;
 
   private constructor(options: BridgeOptions = {}) {
     this.namespace = options.namespace || 'ElemeJSBridge';
@@ -14,10 +16,19 @@ export class JSBridge {
     this.debug = options.debug || false;
     this.handlers = new Map();
     this.callbacks = new Map();
+    
+    // 初始化就绪状态 Promise
+    this.readyPromise = new Promise((resolve) => {
+      this.readyResolver = resolve;
+    });
 
     this.initBridge();
   }
 
+  /**
+   * 获取 JSBridge 单例实例
+   * @param options 初始化配置项
+   */
   static getInstance(options?: BridgeOptions): JSBridge {
     if (!JSBridge.instance) {
       JSBridge.instance = new JSBridge(options);
@@ -26,57 +37,99 @@ export class JSBridge {
   }
 
   private initBridge(): void {
-    // 初始化全局 JSBridge 对象
     (window as any)[this.namespace] = {
       handleNativeCall: this.handleNativeCall.bind(this),
       handleNativeCallback: this.handleNativeCallback.bind(this),
+      notifyBridgeReady: this.notifyBridgeReady.bind(this),
     };
   }
 
-  // 注册处理器
+  /**
+   * 注册 JS 处理器，供 Native 调用
+   * @param method 方法名
+   * @param handler 处理函数
+   */
   register(method: string, handler: BridgeHandler): void {
     this.handlers.set(method, handler);
     this.log(`Registered handler for method: ${method}`);
   }
 
-  // 注销处理器
+  /**
+   * 注销 JS 处理器
+   * @param method 方法名
+   */
   unregister(method: string): void {
     this.handlers.delete(method);
     this.log(`Unregistered handler for method: ${method}`);
   }
 
-  // 调用原生方法
-  call<T = any>(method: string, params?: any): Promise<BridgeResponse<T>> {
-    return new Promise((resolve, reject) => {
-      const callbackId = `cb_${Date.now()}`;
-      const timeoutId = setTimeout(() => {
-        this.callbacks.delete(callbackId);
-        reject(new Error(`Call to ${method} timed out after ${this.timeout}ms`));
-      }, this.timeout);
-
-      this.callbacks.set(callbackId, (response) => {
-        clearTimeout(timeoutId);
-        this.callbacks.delete(callbackId);
-        resolve(response as BridgeResponse<T>);
-      });
-
-      const message = {
-        method,
-        params,
-        callbackId,
-      };
-
-      this.log(`Calling native method: ${method}`, message);
-      // 调用 Android 的 JSBridge 方法
-      if ((window as any).ElemeJSBridge?.call) {
-        (window as any).ElemeJSBridge.call(JSON.stringify(message));
-      } else {
-        reject(new Error('JSBridge not initialized'));
-      }
-    });
+  /**
+   * 等待 JSBridge 就绪
+   * @param timeout 超时时间（毫秒）
+   * @returns Promise<void>
+   */
+  async waitForReady(timeout?: number): Promise<void> {
+    if (timeout) {
+      return Promise.race([
+        this.readyPromise,
+        new Promise<void>((_, reject) => {
+          setTimeout(() => reject(new Error('JSBridge ready timeout')), timeout);
+        }),
+      ]);
+    }
+    return this.readyPromise;
   }
 
-  // 处理原生调用
+  /**
+   * 由 Native 端调用，通知 JSBridge 已就绪
+   */
+  private notifyBridgeReady(): void {
+    this.log('Bridge is ready');
+    this.readyResolver?.();
+  }
+
+  /**
+   * 调用 Native 方法
+   * @param method 方法名
+   * @param params 参数
+   * @returns Promise<BridgeResponse>
+   */
+  async call<T = any>(method: string, params?: any): Promise<BridgeResponse<T>> {
+    try {
+      // 等待 Bridge 就绪
+      await this.waitForReady(this.timeout);
+      
+      return new Promise((resolve, reject) => {
+        const callbackId = `cb_${Date.now()}`;
+        const timeoutId = setTimeout(() => {
+          this.callbacks.delete(callbackId);
+          reject(new Error(`Call to ${method} timed out after ${this.timeout}ms`));
+        }, this.timeout);
+
+        this.callbacks.set(callbackId, (response) => {
+          clearTimeout(timeoutId);
+          this.callbacks.delete(callbackId);
+          resolve(response as BridgeResponse<T>);
+        });
+
+        const message = {
+          method,
+          params,
+          callbackId,
+        };
+
+        this.log(`Calling native method: ${method}`, message);
+        if ((window as any).ElemeJSBridge?.call) {
+          (window as any).ElemeJSBridge.call(JSON.stringify(message));
+        } else {
+          reject(new Error('JSBridge not initialized'));
+        }
+      });
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Unknown error');
+    }
+  }
+
   private handleNativeCall(message: { method: string; params?: any; callbackId?: string }): void {
     this.log('Received native call:', message);
     const { method, params, callbackId } = message;
@@ -98,7 +151,6 @@ export class JSBridge {
     }
   }
 
-  // 处理原生回调
   private handleNativeCallback(callbackId: string, response: BridgeResponse): void {
     this.log('Received native callback:', { callbackId, response });
     const callback = this.callbacks.get(callbackId);
@@ -107,7 +159,6 @@ export class JSBridge {
     }
   }
 
-  // 发送回调给原生
   private sendCallback(callbackId: string, response: BridgeResponse): void {
     this.log('Sending callback to native:', { callbackId, response });
     if ((window as any).ElemeJSBridge?.handleCallback) {
@@ -115,15 +166,17 @@ export class JSBridge {
     }
   }
 
-  // 设置调试模式
+  /**
+   * 设置调试模式
+   * @param enabled 是否启用调试
+   */
   setDebug(enabled: boolean): void {
     this.debug = enabled;
   }
 
-  // 日志输出
   private log(message: string, ...args: any[]): void {
     if (this.debug) {
       console.log(`[${this.namespace}] ${message}`, ...args);
     }
   }
-} 
+}

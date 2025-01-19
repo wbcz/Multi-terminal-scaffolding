@@ -14,9 +14,30 @@ class ElemeJSBridge(private val webView: WebView) {
     private val handlers = ConcurrentHashMap<String, BridgeHandler>()
     private val callbacks = ConcurrentHashMap<String, BridgeCallback>()
     private var debug = false
+    private var isReady = false
 
     init {
         webView.addJavascriptInterface(this, BRIDGE_NAME)
+        // 在页面加载完成后通知 Web 端 Bridge 已就绪
+        webView.webViewClient = object : android.webkit.WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                notifyBridgeReady()
+            }
+        }
+    }
+
+    /**
+     * 通知 Web 端 Bridge 已就绪
+     */
+    private fun notifyBridgeReady() {
+        if (!isReady) {
+            isReady = true
+            webView.post {
+                webView.evaluateJavascript("javascript:window.$BRIDGE_NAME.notifyBridgeReady()", null)
+            }
+            log("Bridge ready notification sent")
+        }
     }
 
     // 注册处理器
@@ -29,8 +50,26 @@ class ElemeJSBridge(private val webView: WebView) {
         handlers.remove(method)
     }
 
-    // 调用 JS 方法
+    /**
+     * 检查 Bridge 是否就绪
+     */
+    private fun checkBridgeReady(): Boolean {
+        if (!isReady) {
+            log("Bridge not ready")
+            return false
+        }
+        return true
+    }
+
+    /**
+     * 调用 JS 方法
+     */
     fun call(method: String, params: JSONObject?, callback: BridgeCallback?) {
+        if (!checkBridgeReady()) {
+            callback?.invoke(BridgeResponse(503, "Bridge not ready"))
+            return
+        }
+
         val callbackId = if (callback != null) {
             val id = "cb_${System.currentTimeMillis()}"
             callbacks[id] = callback
