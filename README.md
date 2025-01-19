@@ -15,51 +15,87 @@
 
 ## 项目结构
 
-```
-├── apps
-│   └── web                 # Web 应用
-│       └── src
-│           └── modoules        # 微应用
-│               ├── admin   # 管理后台
-│               ├── merchant # 商户端
-│               └── platform # 平台端
-├── packages
-│   ├── api                 # API 接口
-│   ├── hooks              # 通用 Hooks
-│   ├── shared             # 基础设施
-│   │   └── plugin         # 插件系统
-│   │   └── middleware     # 中间件
-│   ├── types              # 类型定义
-│   ├── ui                 # UI 组件库
-│   └── utils              # 工具函数
+```bash
+/packages               # 共享包目录
+  /jsbridge            # JSBridge SDK
+  /api                 # API 接口封装
+  /hooks               # 通用 Hooks
+  /types               # 类型定义
+  /ui                  # UI 组件库
+  /utils               # 工具函数
 ```
 
-## 开发
+## JSBridge SDK
+
+用于 Web 和 Native 应用之间的双向通信。
+
+### 特性
+
+- Web 和 Native 双向通信
+- 同步异步调用支持
+- 消息队列和加载顺序处理
+- 完整的错误处理
+- TypeScript 类型支持
+
+### 使用示例
+
+```typescript
+import { createJSBridge, BridgeMethods } from '@eleme/jsbridge';
+
+// 创建 JSBridge 实例
+const bridge = createJSBridge({
+  debug: true,
+  timeout: 5000
+});
+
+// 等待 bridge 就绪
+await bridge.ready();
+
+// 异步调用
+try {
+  const response = await bridge.call(BridgeMethods.GET_LOCATION);
+  console.log('Location:', response.data);
+} catch (error) {
+  console.error('Failed to get location:', error);
+}
+
+// 同步调用
+const response = bridge.callSync(BridgeMethods.GET_DEVICE_INFO);
+console.log('Device info:', response.data);
+
+// 注册处理方法
+bridge.register('customMethod', (data, callback) => {
+  callback({
+    code: 200,
+    message: 'Success',
+    data: { processed: true }
+  });
+});
+```
+
+### 文档
+
+- [时序图](packages/jsbridge/docs/sequence.puml)
+- [流程图](packages/jsbridge/docs/flow.puml)
+
+## 开发指南
+
+### 安装依赖
 
 ```bash
-# 安装依赖
 pnpm install
+```
 
-# 启动开发服务器
-pnpm dev:admin      # 管理后台
-pnpm dev:merchant   # 商户端
-pnpm dev:platform   # 平台端
+### 构建
 
-# 构建
-pnpm build:admin    # 管理后台
-pnpm build:merchant # 商户端
-pnpm build:platform # 平台端
+```bash
+pnpm build
+```
 
-# 预览
-pnpm serve:admin    # 管理后台
-pnpm serve:merchant # 商户端
-pnpm serve:platform # 平台端
+### 开发
 
-# 类型检查
-pnpm type-check
-
-# 代码检查
-pnpm lint
+```bash
+pnpm dev
 ```
 
 ## 特性
