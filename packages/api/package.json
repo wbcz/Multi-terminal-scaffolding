@@ -26,8 +26,8 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@eleme/types": "workspace:*",
-    "@eleme/utils": "workspace:*"
+    "@wbcz/types": "workspace:*",
+    "@wbcz/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

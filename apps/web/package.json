@@ -1,5 +1,5 @@
 {
-  "name": "@eleme/web",
+  "name": "@wbcz/web",
   "private": true,
   "version": "0.0.1",
   "scripts": {
@@ -22,12 +22,12 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@wbcz/api": "workspace:*",
     "@wbcz/ui": "workspace:*",
+    "@wbcz/utils": "workspace:*",
     "@wbcz/hooks": "workspace:*",
-    "@eleme/api": "workspace:*",
     "@wbcz/shared": "workspace:*",
-    "@eleme/types": "workspace:*",
-    "@eleme/utils": "workspace:*",
+    "@wbcz/types": "workspace:*",
     "antd": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react-lite": "^4.0.0",
@@ -39,6 +39,8 @@
   "devDependencies": {
     "@types/glob": "^8.1.0",
     "@types/node": "^22.10.7",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.0.0",
     "glob": "^11.0.1",
     "http-server": "^14.1.1",

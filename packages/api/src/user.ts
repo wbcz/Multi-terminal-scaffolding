@@ -1,5 +1,5 @@
-import { http } from '@eleme/utils';
-import type { User, ApiResponse, PageResult } from '@eleme/types';
+import { http } from '@wbcz/utils';
+import type { User, ApiResponse, PageResult } from '@wbcz/types';
 
 interface GetUsersParams {
   page?: number;

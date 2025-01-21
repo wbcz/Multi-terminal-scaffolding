@@ -1,5 +1,5 @@
 {
-  "name": "@eleme/jsbridge",
+  "name": "@wbcz/jsbridge",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
@@ -10,9 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@eleme/utils": "workspace:*",
-    "@eleme/types": "workspace:*",
-    "@eleme/adapters": "workspace:*"
+    "@wbcz/utils": "workspace:*",
+    "@wbcz/types": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

@@ -17,11 +17,11 @@ export default defineConfig(({ mode }) => ({
     },
     target: 'es2020',
     rollupOptions: {
-      external: ['@eleme/types', '@eleme/utils'],
+      external: ['@wbcz/types', '@wbcz/utils'],
       output: {
         globals: {
-          '@eleme/types': 'ElemeTypes',
-          '@eleme/utils': 'ElemeUtils'
+          '@wbcz/types': 'ElemeTypes',
+          '@wbcz/utils': 'ElemeUtils'
         },
       },
     },

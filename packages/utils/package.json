@@ -1,5 +1,5 @@
 {
-  "name": "@eleme/utils",
+  "name": "@wbcz/utils",
   "version": "0.0.1",
   "private": true,
   "main": "./src/index.ts",
@@ -9,6 +9,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@wbcz/types": "workspace:*",
     "axios": "^1.7.9",
     "dayjs": "^1.11.13"
   },
