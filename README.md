@@ -35,6 +35,122 @@
 │   └── utils              # 工具函数
 ```
 
+## 技术实现
+
+### HTTP 请求拦截器实现
+
+#### 1. 拦截器管理器 (InterceptorManager)
+
+```typescript
+interface Interceptor<T> {
+  fulfilled: (value: T) => T | Promise<T>;
+  rejected?: (error: any) => any;
+}
+
+class InterceptorManager<T> {
+  private handlers: (Interceptor<T> | null)[] = [];
+
+  use(fulfilled: (value: T) => T | Promise<T>, rejected?: (error: any) => any): number {
+    this.handlers.push({ fulfilled, rejected });
+    return this.handlers.length - 1;
+  }
+
+  eject(id: number): void {
+    if (this.handlers[id]) {
+      this.handlers[id] = null;
+    }
+  }
+
+  forEach(fn: (h: Interceptor<T>) => void): void {
+    this.handlers.forEach(h => {
+      if (h !== null) {
+        fn(h);
+      }
+    });
+  }
+}
+```
+
+#### 2. 请求处理流程
+
+```typescript
+class Axios {
+  interceptors = {
+    request: new InterceptorManager<AxiosRequestConfig>(),
+    response: new InterceptorManager<AxiosResponse>()
+  };
+
+  request(config: AxiosRequestConfig): Promise<any> {
+    // 构建请求链
+    const chain = [
+      {
+        fulfilled: (config: AxiosRequestConfig) => this.dispatchRequest(config),
+        rejected: undefined
+      }
+    ];
+
+    // 请求拦截器（后进先出）
+    this.interceptors.request.forEach(interceptor => {
+      chain.unshift(interceptor);
+    });
+
+    // 响应拦截器（先进先出）
+    this.interceptors.response.forEach(interceptor => {
+      chain.push(interceptor);
+    });
+
+    // 执行请求链
+    let promise = Promise.resolve(config);
+    while (chain.length) {
+      const { fulfilled, rejected } = chain.shift();
+      promise = promise.then(fulfilled, rejected);
+    }
+
+    return promise;
+  }
+}
+```
+
+#### 3. 实际应用示例
+
+```typescript
+// 认证拦截器
+http.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 响应处理
+http.interceptors.response.use(
+  response => response.data,
+  error => {
+    if (error.response?.status === 401) {
+      // 处理未授权
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+#### 4. 特点说明
+
+- **拦截器顺序**：
+  - 请求拦截器：后添加先执行（LIFO）
+  - 响应拦截器：先添加先执行（FIFO）
+
+- **错误处理**：
+  - 支持请求和响应错误处理
+  - 错误沿拦截器链传播
+
+- **灵活性**：
+  - 支持异步拦截器
+  - 可动态添加和移除
+  - 支持多个拦截器
+
 ## 开发
 
 ```bash
@@ -291,3 +407,8 @@ system.emit('myEvent', ...args)
 - `TraditionalSelect.tsx`: 传统组件实现
 - `HeadlessSelect.tsx`: Headless 组件实现
 - `example.tsx`: 两种实现的对比示例 
+
+## 文档
+
+- [Axios 请求流程](docs/axios-flow.md)
+- [拦截器实现原理](docs/interceptor-manager.md) 
