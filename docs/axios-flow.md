@@ -174,3 +174,50 @@ http.interceptors.response.use(
    - 网络错误
    - 业务错误
    - 认证错误 
+
+``
+将axios请求核心实现流，弄成md, 放到 docs里
+class Axios {
+  interceptors = {
+    request: new InterceptorManager<AxiosRequestConfig>(),
+    response: new InterceptorManager<AxiosResponse>()
+  };
+
+  request(config: AxiosRequestConfig): Promise<any> {
+    // 创建 promise 链
+    const chain: any[] = [
+      {
+        fulfilled: (config: AxiosRequestConfig) => this.dispatchRequest(config),
+        rejected: undefined
+      }
+    ];
+
+    // 将请求拦截器添加到链的前面（后进先出）
+    this.interceptors.request.forEach(interceptor => {
+      chain.unshift(interceptor);
+    });
+
+    // 将响应拦截器添加到链的后面（先进先出）
+    this.interceptors.response.forEach(interceptor => {
+      chain.push(interceptor);
+    });
+
+    // 执行 Promise 链
+    let promise = Promise.resolve(config);
+
+    while (chain.length) {
+      const { fulfilled, rejected } = chain.shift();
+      promise = promise.then(fulfilled, rejected);
+    }
+
+    return promise;
+  }
+
+  private dispatchRequest(config: AxiosRequestConfig) {
+    // 实际发送请求的逻辑
+    return new Promise((resolve, reject) => {
+      // XMLHttpRequest 或 fetch 的具体实现
+    });
+  }
+}
+``
