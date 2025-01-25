@@ -30,12 +30,6 @@ export default function CrossPageTableDemo() {
   // 总数据量
   const total = 100;
 
-  // 模拟回显数据
-  const echoData: DataItem[] = [
-    { id: 2, name: '用户 2', age: 25, address: '地址 2' },
-    { id: 15, name: '用户 15', age: 30, address: '地址 15' }
-  ];
-
   // 列定义
   const columns = [
     {
@@ -84,7 +78,6 @@ export default function CrossPageTableDemo() {
         total={total}
         selectedKeys={selectedKeys}
         onSelectedChange={handleSelectedChange}
-        echoData={echoData}
         rowKey="id"
       />
 

@@ -5,7 +5,6 @@
 ## 特性
 
 - ✨ 支持跨分页选择数据
-- 🔄 支持选中数据回显
 - 📊 保持与 antd Table 组件的功能一致
 - 🎯 支持自定义选择逻辑
 - 💫 支持清空选择
@@ -31,12 +30,6 @@ interface DataItem {
 function MyTable() {
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
 
-  // 回显数据
-  const echoData = [
-    { id: 1, name: '张三', age: 25 },
-    { id: 2, name: '李四', age: 30 }
-  ];
-
   return (
     <CrossPageTable<DataItem>
       columns={columns}
@@ -48,7 +41,6 @@ function MyTable() {
       total={100}
       selectedKeys={selectedKeys}
       onSelectedChange={setSelectedKeys}
-      echoData={echoData}
       rowKey="id"
     />
   );
@@ -65,15 +57,13 @@ function MyTable() {
 | onSelectedChange | 选中项变化时的回调 | `(selectedKeys: Key[]) => void` | - |
 | total | 数据总数 | `number` | - |
 | defaultSelectAll | 是否默认选中当前页所有数据 | `boolean` | `false` |
-| echoData | 选中项的回显数据 | `T[]` | `[]` |
 
 其他属性与 antd Table 组件一致。
 
 ### 注意事项
 
 1. 数据项必须包含唯一的 `id` 字段作为 key
-2. `echoData` 中的数据结构必须与表格数据结构一致
-3. 组件内部会自动处理跨分页选择的状态维护
+2. 组件内部会自动处理跨分页选择的状态维护
 
 ## 最佳实践
 
@@ -124,24 +114,6 @@ function MyTable() {
     <CrossPageTable<DataItem>
       // ...其他属性
       onSelectedChange={handleSelectedChange}
-    />
-  );
-}
-```
-
-3. 使用回显数据
-```tsx
-function MyTable() {
-  // 从后端获取已选中的数据
-  const fetchSelectedData = async () => {
-    const response = await api.getSelectedItems();
-    return response.data;
-  };
-
-  return (
-    <CrossPageTable<DataItem>
-      // ...其他属性
-      echoData={fetchSelectedData()}
     />
   );
 }
