@@ -9,7 +9,7 @@ const sandboxMap = new Map<string, MultipleProxySandbox>();
  * @param appName 应用名称
  * @returns 沙箱实例
  */
-function getOrCreateSandbox(appName: string): MultipleProxySandbox {
+export function getOrCreateSandbox(appName: string): MultipleProxySandbox {
   if (!sandboxMap.has(appName)) {
     // 创建共享上下文
     const context = {
@@ -70,43 +70,37 @@ export async function loadResource(config: ResourceLoaderConfig): Promise<Resour
 /**
  * 执行脚本
  * @param script 脚本内容
- * @param appName 应用名称
+ * @param proxy 代理对象
  * @param strictGlobal 是否严格全局作用域
  * @returns Promise<void>
  */
-export async function executeScript(script: string, appName: string, strictGlobal = false): Promise<void> {
+export function executeScript(script: string, proxy: Window, strictGlobal = false): void {
   try {
-    // 获取或创建沙箱实例
-    const sandbox = getOrCreateSandbox(appName);
-    
-    // 激活沙箱
-    sandbox.active();
-    
-    // 获取代理对象
-    const proxy = sandbox.getProxy();
-    debugger
-    // 包装脚本内容
-    const wrappedScript = `
-      try {
-        with(window) {
+    if (strictGlobal) {
+      // 使用 IIFE 并通过闭包传递 proxy 对象
+      const strictScript = `
+        (function(proxy) {
+          with(proxy) {
+            ${script}
+          }
+        })(this);
+      `;
+
+      // 使用 Function 构造函数创建一个新的函数作用域，并绑定 proxy 作为 this
+      const executeFunction = new Function('proxy', `
+        with(proxy) {
           ${script}
         }
-      } catch(e) {
-        console.error('[${appName}] Script execution error:', e);
-        throw e;
-      }
-    `;
+      `);
+      executeFunction.call(proxy, proxy);
 
-    // 创建函数
-    const executeFunction = new Function('window', 'self', 'globalThis', wrappedScript);
-
-    // 执行函数
-    executeFunction.call(proxy, proxy, proxy, proxy);
-
-    return Promise.resolve();
+    } else {
+      // 直接在当前作用域执行脚本
+      (0, eval)(script);
+    }
   } catch (error) {
-    console.error(`[${appName}] Error executing script:`, error);
-    return Promise.reject(error);
+    console.error('Error executing script:', error);
+    throw error;
   }
 }
 

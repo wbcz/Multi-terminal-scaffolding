@@ -58,8 +58,8 @@ async function bootstrap() {
   
   // 并行加载两个子应用
   await Promise.all([
-    loadMicroApp('sub-app-1', 'http://localhost:3000/sub1', 'app1-container'),
-    loadMicroApp('sub-app-2', 'http://localhost:3000/sub2', 'app2-container')
+    loadMicroApp('sub-app-1', 'http://localhost:3001/sub1', 'app1-container'),
+    loadMicroApp('sub-app-2', 'http://localhost:3001/sub2', 'app2-container')
   ]);
 
   console.log('所有子应用加载完成');
