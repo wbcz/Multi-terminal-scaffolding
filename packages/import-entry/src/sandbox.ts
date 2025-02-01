@@ -4,7 +4,7 @@
  */
 export class MultipleProxySandbox {
   private name: string;
-  private proxy: Window | null;
+  public proxy: Window;
   private sandboxRunning: boolean;
   private fakeWindow: Record<string, any>;
   private context: Record<string, any>;
@@ -30,7 +30,6 @@ export class MultipleProxySandbox {
    */
   constructor(name: string, context: Record<string, any> = {}) {
     this.name = name;
-    this.proxy = null;
     this.sandboxRunning = false;
     this.context = context;
     this.fakeWindow = Object.create(null);
@@ -70,7 +69,7 @@ export class MultipleProxySandbox {
    * 获取代理对象
    */
   getProxy(): Window {
-    return this.proxy as Window;
+    return this.proxy;
   }
 
   /**

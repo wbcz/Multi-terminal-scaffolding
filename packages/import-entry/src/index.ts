@@ -1,6 +1,5 @@
 import type { ImportEntryOpts, ImportEntryResult } from './types';
-import { loadResource, loadResources, executeScript, appendStyle } from './loader';
-import { getOrCreateSandbox } from './loader';
+import { loadResource, loadResources, executeScript, appendStyle, getOrCreateSandbox } from './loader';
 
 /**
  * 解析 HTML 中的资源
@@ -133,25 +132,23 @@ export async function importEntry(
   const execScripts = async (appName: string, strictGlobal = false) => {
     if (!shouldExecuteScripts) return;
 
-    // 获取沙箱实例
+    // 获取或创建应用的沙箱实例
     const sandbox = getOrCreateSandbox(appName);
-    
-    // 激活沙箱
     sandbox.active();
-    
-    // 获取代理对象
-    const proxy = sandbox.getProxy();
 
-    // 执行内联脚本
-    for (const script of inlineScripts) {
-      await executeScript(script, appName, strictGlobal);
-    }
+    try {
+      // 执行内联脚本
+      for (const script of inlineScripts) {
+        await executeScript(script, sandbox.proxy, strictGlobal);
+      }
 
-    // 加载并执行外部脚本
-    const externalScripts = await getExternalScripts();
-    for (const script of externalScripts) {
-      console.log(script,1111111);
-      await executeScript(script, appName, strictGlobal);
+      // 加载并执行外部脚本
+      const externalScripts = await getExternalScripts();
+      for (const script of externalScripts) {
+        await executeScript(script, sandbox.proxy, strictGlobal);
+      }
+    } finally {
+      sandbox.inactive();
     }
   };
 
@@ -179,4 +176,4 @@ export async function importEntry(
 }
 
 export * from './types';
-export * from './loader';
+export * from './loader'; 
