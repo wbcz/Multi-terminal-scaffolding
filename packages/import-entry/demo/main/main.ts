@@ -1,11 +1,5 @@
-import { importEntry } from './index';
+import { importEntry } from '../../src';
 
-/**
- * 加载单个子应用
- * @param name 应用名称
- * @param url 应用入口地址
- * @param containerId 容器ID
- */
 async function loadMicroApp(name: string, url: string, containerId: string) {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -26,7 +20,7 @@ async function loadMicroApp(name: string, url: string, containerId: string) {
     });
     console.log(`[${name}] 应用入口加载完成`);
 
-    // 获取外部资源
+    // 获取外部脚本和样式
     console.log(`[${name}] 开始加载外部资源`);
     const [scripts, styles] = await Promise.all([
       app.getExternalScripts(),
@@ -58,17 +52,14 @@ async function loadMicroApp(name: string, url: string, containerId: string) {
   }
 }
 
-/**
- * 启动所有子应用
- */
+// 启动应用
 async function bootstrap() {
   console.log('开始加载子应用...');
   
-  // 并行加载多个子应用
+  // 并行加载两个子应用
   await Promise.all([
-    loadMicroApp('app1', 'http://localhost:3000/sub1', 'app1-container'),
-    loadMicroApp('app2', 'http://localhost:3000/sub2', 'app2-container'),
-    // 可以继续添加更多子应用
+    loadMicroApp('sub-app-1', 'http://localhost:3000/sub1', 'app1-container'),
+    loadMicroApp('sub-app-2', 'http://localhost:3000/sub2', 'app2-container')
   ]);
 
   console.log('所有子应用加载完成');
@@ -79,10 +70,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootstrap);
 } else {
   bootstrap();
-}
-
-// 导出接口供外部使用
-export {
-  loadMicroApp,
-  bootstrap
-}; 
+} 

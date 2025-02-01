@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sandbox Demo - Main App</title>
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .title {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .apps-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .app-container {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 200px;
+      position: relative;
+    }
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #666;
+    }
+    .error {
+      color: #ff4444;
+      text-align: center;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">多实例沙箱演示</h1>
+    <div class="apps-container">
+      <div class="app-container" id="app1-container">
+        <div class="loading">加载中...</div>
+      </div>
+      <div class="app-container" id="app2-container">
+        <div class="loading">加载中...</div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html> 

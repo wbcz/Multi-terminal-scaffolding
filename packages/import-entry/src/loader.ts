@@ -1,4 +1,29 @@
 import type { ResourceLoaderConfig, ResourceLoadResult } from './types';
+import { MultipleProxySandbox } from './sandbox';
+
+// 存储应用沙箱实例的 Map
+const sandboxMap = new Map<string, MultipleProxySandbox>();
+
+/**
+ * 获取或创建应用沙箱
+ * @param appName 应用名称
+ * @returns 沙箱实例
+ */
+function getOrCreateSandbox(appName: string): MultipleProxySandbox {
+  if (!sandboxMap.has(appName)) {
+    // 创建共享上下文
+    const context = {
+      document: window.document,
+      history: window.history,
+      location: window.location
+    };
+    
+    // 创建新的沙箱实例
+    const sandbox = new MultipleProxySandbox(appName, context);
+    sandboxMap.set(appName, sandbox);
+  }
+  return sandboxMap.get(appName)!;
+}
 
 /**
  * 加载资源
@@ -45,31 +70,44 @@ export async function loadResource(config: ResourceLoaderConfig): Promise<Resour
 /**
  * 执行脚本
  * @param script 脚本内容
- * @param proxy 代理对象
+ * @param appName 应用名称
  * @param strictGlobal 是否严格全局作用域
+ * @returns Promise<void>
  */
-export function executeScript(script: string, proxy: Window, strictGlobal = false): void {
-  // 创建一个新的 script 元素
-  const scriptElement = document.createElement('script');
-  scriptElement.type = 'text/javascript';
-  scriptElement.text = script;
-
-  // 如果需要严格的全局作用域
-  if (strictGlobal) {
-    // 使用 with 语句限制全局作用域
-    const strictScript = `
-      (function(window) {
+export async function executeScript(script: string, appName: string, strictGlobal = false): Promise<void> {
+  try {
+    // 获取或创建沙箱实例
+    const sandbox = getOrCreateSandbox(appName);
+    
+    // 激活沙箱
+    sandbox.active();
+    
+    // 获取代理对象
+    const proxy = sandbox.getProxy();
+    debugger
+    // 包装脚本内容
+    const wrappedScript = `
+      try {
         with(window) {
           ${script}
         }
-      })(window.proxy);
+      } catch(e) {
+        console.error('[${appName}] Script execution error:', e);
+        throw e;
+      }
     `;
-    scriptElement.text = strictScript;
-  }
 
-  // 将脚本添加到文档中执行
-  document.head.appendChild(scriptElement);
-  document.head.removeChild(scriptElement);
+    // 创建函数
+    const executeFunction = new Function('window', 'self', 'globalThis', wrappedScript);
+
+    // 执行函数
+    executeFunction.call(proxy, proxy, proxy, proxy);
+
+    return Promise.resolve();
+  } catch (error) {
+    console.error(`[${appName}] Error executing script:`, error);
+    return Promise.reject(error);
+  }
 }
 
 /**

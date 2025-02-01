@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sub App 2</title>
+  <style>
+    .sub-app {
+      padding: 20px;
+      border: 2px solid #2196F3;
+      border-radius: 4px;
+      margin: 10px;
+    }
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 5px 10px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .value {
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="sub-app">
+    <h2>Sub Application 2</h2>
+    <div>
+      <p>全局变量: <span id="globalVar"></span></p>
+      <button onclick="window.setGlobalVar('App2 的值')">设置全局变量</button>
+    </div>
+    <div class="counter">
+      <button id="decrease">-</button>
+      <span class="value" id="count">0</span>
+      <button id="increase">+</button>
+    </div>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html> 

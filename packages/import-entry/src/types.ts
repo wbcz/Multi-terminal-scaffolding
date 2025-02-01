@@ -8,9 +8,9 @@ export interface ImportEntryOpts {
   executeScripts?: boolean;
   /** 是否获取样式 */
   getStyles?: boolean;
-  /** 是否忽略 prefetch/preload 资源 */
+  /** 是否忽略预加载资源 */
   ignorePreloadAssets?: boolean;
-  /** 自定义请求头 */
+  /** 请求头 */
   requestHeaders?: Record<string, string>;
 }
 
@@ -20,14 +20,14 @@ export interface ImportEntryOpts {
 export interface ImportEntryResult {
   /** 模板内容 */
   template: string;
-  /** 异步加载的脚本资源 */
+  /** 资源公共路径 */
   assetPublicPath: string;
   /** 获取外部脚本 */
   getExternalScripts: () => Promise<string[]>;
   /** 获取外部样式 */
   getExternalStyleSheets: () => Promise<string[]>;
   /** 执行脚本 */
-  execScripts: (proxy: Window, strictGlobal?: boolean) => Promise<any>;
+  execScripts: (appName: string, strictGlobal?: boolean) => Promise<void>;
 }
 
 /**
@@ -38,9 +38,9 @@ export interface ResourceLoaderConfig {
   url: string;
   /** 资源类型 */
   type: 'script' | 'style';
-  /** 自定义属性 */
+  /** 资源属性 */
   attrs?: Record<string, string>;
-  /** 加载超时时间 */
+  /** 超时时间 */
   timeout?: number;
 }
 

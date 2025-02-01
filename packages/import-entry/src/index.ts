@@ -9,7 +9,7 @@ import { loadResource, loadResources, executeScript, appendStyle } from './loade
 function parseHTML(html: string) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-
+  console.log(doc,323233);
   // 获取所有外部脚本
   const scripts = Array.from(doc.querySelectorAll('script[src]')).map(script => ({
     url: script.getAttribute('src') || '',
@@ -39,7 +39,7 @@ function parseHTML(html: string) {
 
   // 获取所有内联样式
   const inlineStyles = Array.from(doc.querySelectorAll('style')).map(style => style.textContent || '');
-
+  console.log(inlineStyles,1111111);
   // 获取模板内容
   const template = doc.body.innerHTML;
 
@@ -129,19 +129,20 @@ export async function importEntry(
   };
 
   // 执行脚本
-  const execScripts = async (proxy: Window, strictGlobal = false) => {
+  const execScripts = async (appName: string, strictGlobal = false) => {
     if (!shouldExecuteScripts) return;
 
     // 执行内联脚本
-    inlineScripts.forEach(script => {
-      executeScript(script, proxy, strictGlobal);
-    });
+    for (const script of inlineScripts) {
+      await executeScript(script, appName, strictGlobal);
+    }
 
     // 加载并执行外部脚本
     const externalScripts = await getExternalScripts();
-    externalScripts.forEach(script => {
-      executeScript(script, proxy, strictGlobal);
-    });
+    for (const script of externalScripts) {
+        console.log(script,1111111);
+      await executeScript(script, appName, strictGlobal);
+    }
   };
 
   // 如果需要样式，立即加载并添加
